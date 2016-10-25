@@ -1,0 +1,6 @@
+## Interface: 11200
+## Title: FeralFire
+## Notes: OP Feral Druid Attack.
+## Author: Mark Tiedemann, Julian Eggers
+## Version: 0.1
+FeralFire.lua
