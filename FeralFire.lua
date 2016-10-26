@@ -85,7 +85,7 @@ function FF_Attack()
         cast(FF.BACKSTAB_MOVE)
 
     -- 2 - Ensure Faerie Fire
-elseif FF.USE_FAERIE_FIRE
+    elseif FF.USE_FAERIE_FIRE
         and GetActionCooldown(FF.FAERIE_FIRE_SLOT) == 0
             and not FF_IsDebuffActive(FAERIE_FIRE_ICON) then
                 cast('Faerie Fire (Feral)(Rank ' .. FF.FAERIE_FIRE_RANK .. ')')
@@ -138,7 +138,8 @@ function FF_FindValue(str, key)
     if startIndex == nil then
         return nil
     else
-        local endIndex = strfind(str, ' ', startIndex) or string.len(str) + 1
+        local endIndex = strfind(str, ' ', startIndex)
+            or string.len(str) + 1
         return strsub(str, startIndex + keyLength + 1, endIndex - 1)
     end
 end
@@ -149,7 +150,8 @@ function FF_ConvertValue(value)
     elseif value == 'false' then
         return false
     else
-        return tonumber(value) or newValue
+        return tonumber(value)
+            or value
     end
 end
 
@@ -171,4 +173,4 @@ function FF_InitSlashCmd()
 end
 
 FF_InitSlashCmd()
-ChatFrame1:AddMessage('Feral ready to spit fire!')
+DEFAULT_CHAT_FRAME:AddMessage('Feral ready to spit fire!')

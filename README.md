@@ -27,9 +27,9 @@ faerie_fire_rank=2
 use_rake=true
 rake_costs=35
 
-backstab_move=Pounce -- or Ravage
+backstab_move=Pounce // or Ravage
 
-default_special_attack=Claw -- or Shred
+default_special_attack=Claw // or Shred
 default_special_attack_costs=40
 
 use_rip=true
