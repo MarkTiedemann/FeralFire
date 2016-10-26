@@ -1,58 +1,67 @@
 
--- IDEA: When shapeshifting into Cat Form, automatically click Track Humanoids
+-- FIXME: Implement Global Cooldown queries
+-- FIXME: Query whether Track Humanoids is active, or:
+-- FIXME: When shapeshifting into Cat Form, automatically click Track Humanoids
+
 -- IDEA: Implement priority queue instead of 'if ... else ...'
 -- IDEA: Feature 'Mend': Undo shapeshifting, cast Healing Touch, shapeshift back into Cat Form
 
--- DEFAULT SETTINGS --
+local cast = CastSpellByName
 
-FF = {}
+local PROWLING_ICON = 'Interface\\Icons\\Spell_Nature_Invisibilty'
+local RAKE_ICON = 'Interface\\Icons\\Ability_Druid_Disembowel'
+local RIP_ICON = 'Interface\\Icons\\Ability_GhoulFrenzy'
+local FAERIE_FIRE_ICON = 'Interface\\Icons\\Spell_Nature_FaerieFire'
 
-FF.ATTACK_SLOT = 13
-FF.PROWLING_SLOT = 14
-FF.FAERIE_FIRE_SLOT = 15
+function FF_GetDefaultSettings()
 
-FF.USE_TRACK_HUMANOIDS = true
+    settings = {}
 
-FF.USE_AUTO_TARGETTING = true
+    settings.attack_slot = 13
+    settings.prowling_slot = 14
+    settings.faerie_fire_slot = 15
 
-FF.USE_FAERIE_FIRE = true
-FF.FAERIE_FIRE_RANK = 2
+    settings.use_track_humanoids = true
 
-FF.USE_RAKE = true
-FF.RAKE_COSTS = 35
+    settings.use_auto_targetting = true
 
-FF.BACKSTAB_MOVE = 'Pounce' -- or 'Ravage'
+    settings.use_faerie_fire = true
+    settings.faerie_fire_rank = 1
 
-FF.DEFAULT_SPECIAL_ATTACK = 'Claw' -- or 'Shred'
-FF.DEFAULT_SPECIAL_ATTACK_COSTS = 40
+    settings.use_rake = true
+    settings.rake_costs = 35
 
-FF.USE_RIP = true
-FF.RIP_COSTS = 30
-FF.RIP_THRESHOLD = 3
+    settings.backstab_move = 'Ravage' -- or 'Pounce'
 
-FF.USE_FEROCIOUS_BITE = false
-FF.FEROCIOUS_BITE_COSTS = 35
-FF.FEROCIOUS_BITE_THRESHOLD = 4
+    settings.default_special_attack = 'Claw' -- or 'Shred'
+    settings.default_special_attack_costs = 40
 
--- CONSTANTS --
+    settings.use_rip = true
+    settings.rip_costs = 30
+    settings.rip_threshold = 5
 
-PROWLING_ICON = 'Interface\\Icons\\Spell_Nature_Invisibilty'
+    settings.use_ferocious_bite = false
+    settings.ferocious_bite_costs = 35
+    settings.ferocious_bite_threshold = 5
 
-RAKE_ICON = 'Interface\\Icons\\Ability_Druid_Disembowel'
-RIP_ICON = 'Interface\\Icons\\Ability_GhoulFrenzy'
-FAERIE_FIRE_ICON = 'Interface\\Icons\\Spell_Nature_FaerieFire'
-
--- FUNCTIONS --
-
-function FF_IsProwling()
-    return GetActionTexture(FF.PROWLING_SLOT) == PROWLING_ICON
+    return settings
 end
 
-function FF_IsAutoAttacking()
-    return IsCurrentAction(FF.ATTACK_SLOT)
+function FF_GetState(settings)
+
+    local state = {}
+
+    state.energy = UnitMana('player')
+    state.comboPoints = GetComboPoints('player')
+    state.hasTarget = GetUnitName('target')
+    state.isAutoAttacking = IsCurrentAction(settings.attack_slot)
+    state.isProwling = GetActionTexture(settings.prowling_slot) == PROWLING_ICON
+
+    return state
 end
 
 function FF_IsDebuffActive(icon)
+
     local active = false
     for index = 1, 20 do
         if icon == UnitDebuff('target', index) then
@@ -63,88 +72,140 @@ function FF_IsDebuffActive(icon)
     return active
 end
 
-function FF_Attack()
+function FF_ShouldCastFaerieFire(settings, state)
 
-    local energy = UnitMana('player')
-    local comboPoints = GetComboPoints('player')
-    local cast = CastSpellByName
+    if not settings.use_faerie_fire then
+        return false
+    end
 
-    if not GetUnitName('target') then
+    if not GetActionCooldown(settings.faerie_fire_slot) == 0 then
+        return false
+    end
+
+    return not FF_IsDebuffActive(FAERIE_FIRE_ICON)
+end
+
+function FF_CastFaerieFire(settings, state)
+
+    cast('Faerie Fire (Feral)(Rank ' .. settings.faerie_fire_rank .. ')')
+
+    -- If Faerie Fire was resisted, attack anyways
+    if not FF_IsDebuffActive(FAERIE_FIRE_ICON)
+        and not state.isAutoAttacking then
+            cast('Attack')
+    end
+end
+
+function FF_ShouldCastRake(settings, state)
+
+    if not settings.use_rake then
+        return false
+    end
+
+    if state.energy < settings.rake_costs then
+        return false
+    end
+
+    if FF_IsDebuffActive(RAKE_ICON) then
+        return false
+    end
+
+    -- Only use Rake if you don't have enough Combo Points for Rip
+    if settings.use_rip
+        and state.comboPoints >= settings.rip_threshold then
+            return false
+    end
+
+    -- Only use Rake if you don't have enough Combo Points for Ferocious Bite
+    if settings.use_ferocious_bite
+        and state.comboPoints >= settings.ferocious_bite_threshold then
+            return false
+    end
+
+    return true
+end
+
+function FF_CastRake(settings, state)
+
+    cast('Rake')
+
+    -- If Rake was resisted, attack anyways
+    if not FF_IsDebuffActive(RAKE_ICON)
+        and not state.isAutoAttacking then
+            cast('Attack')
+    end
+end
+
+function FF_StartAttack(settings, state)
+
+    if not state.hasTarget then
         -- Ensure targetting
-        if FF.USE_AUTO_TARGETTING then
+        if settings.use_auto_targetting then
             TargetNearestEnemy()
             -- Ensure tracking
-            if FF.USE_TRACK_HUMANOIDS then
+            if settings.use_track_humanoids then
                 return cast('Track Humanoids')
             end
         end
     end
 
-    -- 1 - If prowling, use backstab move
-    if FF_IsProwling() then
-        cast(FF.BACKSTAB_MOVE)
+    -- Backstab
+    if state.isProwling then
+        return cast(settings.backstab_move)
+    end
 
-    -- 2 - Ensure Faerie Fire
-    elseif FF.USE_FAERIE_FIRE
-        and GetActionCooldown(FF.FAERIE_FIRE_SLOT) == 0
-            and not FF_IsDebuffActive(FAERIE_FIRE_ICON) then
-                cast('Faerie Fire (Feral)(Rank ' .. FF.FAERIE_FIRE_RANK .. ')')
-                -- If Faerie Fire was resisted, attack anyways
-                if not FF_IsDebuffActive(FAERIE_FIRE_ICON) and not FF_IsAutoAttacking() then
-                    cast('Attack')
-                end
+    -- Faerie Fire
+    if FF_ShouldCastFaerieFire(settings, state) then
+        return FF_CastFaerieFire(settings, state)
+    end
 
-    -- 3 - Ensure Rake
-    elseif FF.USE_RAKE
-        and energy >= FF.RAKE_COSTS
-            -- If you have enough Combo Points for Rip, don't use Rake
-            and comboPoints < FF.RIP_THRESHOLD
-                and not FF_IsDebuffActive(RAKE_ICON) then
-                    cast('Rake')
-                    -- If Rake was resisted, attack anyways
-                    if not FF_IsDebuffActive(RAKE_ICON) and not FF_IsAutoAttacking() then
-                        cast('Attack')
-                    end
+    -- Rake
+    if FF_ShouldCastRake(settings, state) then
+        return FF_CastRake(settings, state)
+    end
 
-    -- 4 - Ensure Rip
-    elseif FF.USE_RIP
-        and comboPoints >= FF.RIP_THRESHOLD
-            and energy >= FF.RIP_COSTS
+    -- Rip
+    if settings.use_rip
+        and state.comboPoints >= settings.rip_threshold
+            and state.energy >= settings.rip_costs
                 and not FF_IsDebuffActive(RIP_ICON) then
-                    cast('Rip')
+                    return cast('Rip')
+    end
 
-    -- 5 - Ensure Ferocious Bite
-    elseif FF.USE_FEROCIOUS_BITE
-        and comboPoints >= FF.FEROCIOUS_BITE_THRESHOLD
-            and energy >= FF.FEROCIOUS_BITE_COSTS then
-                cast('Ferocious Bite')
+    -- Ferocious Bite
+    if settings.use_ferocious_bite
+        and state.comboPoints >= settings.ferocious_bite_threshold
+            and state.energy >= settings.ferocious_bite_costs then
+                return cast('Ferocious Bite')
+    end
 
-    -- 6 - If enough energy, do default attack
-    elseif energy >= FF.DEFAULT_SPECIAL_ATTACK_COSTS then
-        cast(FF.DEFAULT_SPECIAL_ATTACK)
+    -- Special Attack
+    if state.energy >= settings.default_special_attack_costs then
+        return cast(settings.default_special_attack)
+    end
 
-    -- 7 - Else just attack
-    elseif not FF_IsAutoAttacking() then
-        cast('Attack')
+    -- Default attack
+    if not state.isAutoAttacking then
+        return cast('Attack')
     end
 
 end
 
--- SLASH COMMAND --
+function FF_FindValue(message, key)
 
-function FF_FindValue(str, key)
     local keyLength = string.len(key)
-    local startIndex = strfind(str, key)
+    local startIndex = strfind(message, key)
     if startIndex == nil then
         return nil
     else
-        local endIndex = strfind(str, ' ', startIndex)
-            or string.len(str) + 1
-        return strsub(str, startIndex + keyLength + 1, endIndex - 1)
+        local endIndex = strfind(message, ' ', startIndex)
+            or string.len(message) + 1
+        return strsub(message, startIndex + keyLength + 1, endIndex - 1)
     end
 end
 
 function FF_ConvertValue(value)
+
     if value == 'true' then
         return true
     elseif value == 'false' then
@@ -155,22 +216,36 @@ function FF_ConvertValue(value)
     end
 end
 
-function FF_UpdateSettings(msg)
-    for key, value in pairs(FF) do
-        local newValue = FF_FindValue(msg, string.lower(key))
+function FF_UpdateSettings(settings, message)
+
+    for key, value in pairs(settings) do
+        local newValue = FF_FindValue(message, key)
         if newValue then
-            FF[key] = FF_ConvertValue(newValue)
+            settings[key] = FF_ConvertValue(newValue)
         end
     end
+
+    return settings
 end
 
-function FF_InitSlashCmd()
+function FF_InitSlashCommand()
+
     SLASH_FERALFIRE1, SLASH_FERALFIRE2 = '/ff', '/feralfire'
-    function SlashCmdList.FERALFIRE(msg)
-        FF_UpdateSettings(msg)
-        FF_Attack()
+
+    function SlashCmdList.FERALFIRE(message)
+
+        -- 1. Get default settings
+        local settings = FF_GetDefaultSettings()
+        -- 2. Update settings based on command message
+        settings = FF_UpdateSettings(settings, message)
+        -- 3. Get current state based on settings
+        local state = FF_GetState(settings)
+        -- 4. Start attack based on settings and state
+        FF_StartAttack(settings, state)
     end
 end
 
-FF_InitSlashCmd()
-DEFAULT_CHAT_FRAME:AddMessage('Feral ready to spit fire!')
+FF_InitSlashCommand()
+
+ChatFrame1:AddMessage('// FeralFire v0.3 loaded')
+ChatFrame2:AddMessage('// FeralFire v0.3 loaded')

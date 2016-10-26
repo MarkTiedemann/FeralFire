@@ -22,26 +22,29 @@ use_track_humanoids=true
 use_auto_targetting=true
 
 use_faerie_fire=true
-faerie_fire_rank=2
+faerie_fire_rank=1
 
 use_rake=true
 rake_costs=35
 
-backstab_move=Pounce // or Ravage
+backstab_move=Ravage // or Pounce
 
 default_special_attack=Claw // or Shred
 default_special_attack_costs=40
 
 use_rip=true
 rip_costs=30
-rip_threshold=3
+rip_threshold=5
 
 use_ferocious_bite=false
 ferocious_bite_costs=35
-ferocious_bite_threshold=4
+ferocious_bite_threshold=5
 ```
 
-**Example: `/ff use_rake=false backstab_move=Ravage`**
+**Examples:**
+
+- `/ff backstab_move=Pounce` (use all DOTs)
+- `/ff use_rake=false use_rip=false use_ferocious_bite=true` (use no DOTs)
 
 ## License
 
