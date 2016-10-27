@@ -45,8 +45,8 @@ ferocious_bite_threshold=5
 
 **Examples:**
 
-- `/ff use_ravage=false use_pounce=true`
-- `/ff use_rake=false use_rip=false use_ferocious_bite=true`
+- `/ff ravage=false pounce=true`
+- `/ff rake=false rip=false ferocious_bite=true`
 
 **Note:**
 
