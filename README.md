@@ -13,38 +13,44 @@
 In your macro or game chat, run either `/feralfire` or `/ff` with the following options:
 
 ```
-attack_slot=13
-prowling_slot=14
-faerie_fire_slot=15
+auto_targetting=true
 
-use_track_humanoids=true
+track_humanoids=true
 
-use_auto_targetting=true
+faerie_fire=true
 
-use_faerie_fire=true
-faerie_fire_rank=1
+ravage=true
+ravage_costs=60
 
-use_rake=true
+pounce=false
+pounce_costs=50
+
+rake=true
 rake_costs=35
 
-backstab_move=Ravage // or Pounce
+claw=true
+claw_costs=40
 
-default_special_attack=Claw // or Shred
-default_special_attack_costs=40
+shred=false
+shred_costs=60
 
-use_rip=true
+rip=true
 rip_costs=30
 rip_threshold=5
 
-use_ferocious_bite=false
+ferocious_bite=false
 ferocious_bite_costs=35
 ferocious_bite_threshold=5
 ```
 
 **Examples:**
 
-- `/ff backstab_move=Pounce` (use all DOTs)
-- `/ff use_rake=false use_rip=false use_ferocious_bite=true` (use no DOTs)
+- `/ff use_ravage=false use_pounce=true`
+- `/ff use_rake=false use_rip=false use_ferocious_bite=true`
+
+**Note:**
+
+This addon requires `Attack`, `Prowl`, `Claw` and `Faerie Fire (Feral)` to be located somewhere on your action bar.
 
 ## License
 
