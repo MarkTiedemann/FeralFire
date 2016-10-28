@@ -67,7 +67,7 @@ function FF_GetFearieFireRank()
     local faerieFireRank = nil
 
 	for spellIndex = tabSpellOffset + 1, tabSpellOffset + tabNumSpells do
-		local spellName, spellRank = GetSpellName(spellIndex, BOOKTYPE_SPELL)
+        local spellName, spellRank = GetSpellName(spellIndex, BOOKTYPE_SPELL)
         if spellName == 'Faerie Fire (Feral)' then
             local length = string.len(spellRank)
             faerieFireRank = string.sub(spellRank, length, length)
@@ -78,8 +78,10 @@ function FF_GetFearieFireRank()
 end
 
 function FF_GetSlot(icon)
+
     local ACTION_BAR_COUNT = 6
     local SLOTS_PER_ACTION_BAR = 12
+
     for slot = 1, ACTION_BAR_COUNT * SLOTS_PER_ACTION_BAR  do
         if HasAction(slot) then
             if icon == GetActionTexture(slot) then
@@ -87,6 +89,7 @@ function FF_GetSlot(icon)
             end
         end
     end
+
     return nil
 end
 
@@ -118,12 +121,14 @@ end
 function FF_IsDebuffActive(icon)
 
     local active = false
+
     for index = 1, 20 do
         if icon == UnitDebuff('target', index) then
             active = true
             break
         end
     end
+
     return active
 end
 
@@ -235,6 +240,7 @@ function FF_FindValue(message, key)
 
     local keyLength = string.len(key)
     local startIndex = strfind(message, key)
+
     if startIndex == nil then
         return nil
     else
