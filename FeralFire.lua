@@ -1,11 +1,17 @@
 
--- TODO: Implement Global Cooldown queries
--- TODO: Query energy costs for each attack (if possible)
--- TODO: Query whether Track Humanoids is active
+-- TODO: Faerie Fire only when less than 40 energy (else Claw, etc.)
+-- TODO: Auto target switch on dead enemy (after looting)
 
--- HACK: When shapeshifting into Cat Form, automatically click Track Humanoids
+-- BUG: Sometimes auto-attacking fails, may be related to Faerie Fire resisted
+-- BUG: When Faerie Fire was resisted, cooldown doesn't always work
+-- BUG: On shapeshifting, getting a slot may throw an error
 
--- IDEA: Feature: Implement priority queue for the attacks
+-- EXPLORE: Check who caused debuff so that Rake and Rip can stack (if possible)
+-- EXPLORE: Query energy costs for each attack (if possible)
+-- EXPLORE: Query whether Track Humanoids is active (if possible)
+
+-- FEATURE: When shapeshifting into Cat Form, automatically click Track Humanoids
+-- FEATURE: Implement priority queue for the attacks
 
 local cast = CastSpellByName
 
@@ -252,7 +258,7 @@ end
 function FF_UpdateSettings(settings, message)
 
     -- TODO: Improve performance by parsing the message
-    -- instead of looping though it, looking for each setting
+    -- instead of looping through it, looking for each setting
 
     for key, value in pairs(settings) do
         local newValue = FF_FindValue(message, key)
