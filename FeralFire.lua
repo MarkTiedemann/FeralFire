@@ -1,9 +1,8 @@
 
 -- TODO: Target switch on dead enemy (after looting)
 
--- BUG: When Faerie Fire was resisted, cooldown doesn't always work
--- BUG: When Faerie Fire (not Feral) is located on the action bar, the
--- Faerie Fire (Feral) cooldown does not work
+-- BUG: When Faerie Fire (*not* Feral) is located on the action bar, the
+-- Faerie Fire (Feral) cooldown does not work (probably a WONTFIX)
 -- BUG: On shapeshifting, getting a slot may throw an error (probably a WONTFIX)
 
 -- EXPLORE: Check who caused debuff so that Rake and Rip can stack (if possible)
@@ -114,6 +113,7 @@ function FF_GetState(settings)
     state.faerieFireSlot = FF_GetSlot(FAERIE_FIRE_ICON)
     state.clawSlot = FF_GetSlot(CLAW_ICON)
 
+    state.isInCombat = UnitAffectingCombat('player')
     state.isAutoAttacking = IsCurrentAction(state.attackSlot)
     state.isProwling = GetActionTexture(state.prowlingSlot) == PROWL_ACTIVE_ICON
     state.isFaerieFireReady = GetActionCooldown(state.faerieFireSlot) == 0
@@ -189,6 +189,14 @@ function FF_StartAttack(settings, state)
         cast('Attack')
     end
 
+    -- Faerie Fire (out of combat, for pulling)
+    if settings.faerie_fire
+        and state.isFaerieFireReady
+            and not state.isInCombat
+                and not FF_IsDebuffActive(FAERIE_FIRE_ICON) then
+                    return cast('Faerie Fire (Feral)(Rank ' .. state.faerieFireRank .. ')')
+    end
+
     -- Rip
     if settings.rip
         and state.comboPoints >= settings.rip_threshold
@@ -223,7 +231,7 @@ function FF_StartAttack(settings, state)
             return cast('Shred')
     end
 
-    -- Faerie Fire
+    -- Faerie Fire (in combat)
     if settings.faerie_fire
         and state.isFaerieFireReady
             and not FF_IsDebuffActive(FAERIE_FIRE_ICON) then
@@ -294,5 +302,5 @@ end
 
 FF_InitSlashCommand()
 
-ChatFrame1:AddMessage('// FeralFire v0.6 loaded')
-ChatFrame2:AddMessage('// FeralFire v0.6 loaded')
+ChatFrame1:AddMessage('// FeralFire v0.7 loaded')
+ChatFrame2:AddMessage('// FeralFire v0.7 loaded')
