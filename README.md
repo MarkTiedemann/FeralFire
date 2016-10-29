@@ -41,6 +41,9 @@ rip_threshold=5
 ferocious_bite=false
 ferocious_bite_costs=35
 ferocious_bite_threshold=5
+
+debug_settings=false
+debug_state=false
 ```
 
 **Examples:**

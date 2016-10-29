@@ -56,6 +56,9 @@ function FF_GetDefaultSettings()
     settings.ferocious_bite_costs = 35
     settings.ferocious_bite_threshold = 5
 
+    settings.debug_settings = false
+    settings.debug_state = false
+
     return settings
 end
 
@@ -149,6 +152,20 @@ end
 
 function FF_StartAttack(settings, state)
 
+    -- Debug settings
+    if settings.debug_settings then
+        for key, value in pairs(settings) do
+            ChatFrame1:AddMessage(key .. '=' .. tostring(value))
+        end
+    end
+
+    -- Debug state
+    if settings.debug_state then
+        for key, value in pairs(state) do
+            ChatFrame1:AddMessage(key .. '=' .. tostring(value))
+        end
+    end
+
     -- Global Cooldown
     if not state.isReady then
         return
@@ -239,7 +256,7 @@ end
 function FF_FindValue(message, key)
 
     local keyLength = string.len(key)
-    local startIndex = strfind(message, key)
+    local startIndex = strfind(message, key .. '=')
 
     if startIndex == nil then
         return nil
