@@ -213,13 +213,13 @@ function FF_StartAttack(settings, state)
 
     -- Claw
     if settings.claw
-        and state.energy >= settings.claw_costs
+        and state.energy >= settings.claw_costs then
             return cast('Claw')
     end
 
     -- Shred
     if settings.shred
-        and state.energy >= settings.shred_costs
+        and state.energy >= settings.shred_costs then
             return cast('Shred')
     end
 
