@@ -2,9 +2,11 @@
 -- TODO: Faerie Fire only when less than 40 energy (else Claw, etc.)
 -- TODO: Auto target switch on dead enemy (after looting)
 
--- BUG: Sometimes auto-attacking fails, may be related to Faerie Fire resisted
--- BUG: When Faerie Fire was resisted, cooldown doesn't always work
--- BUG: On shapeshifting, getting a slot may throw an error
+-- BUG: Sometimes auto-attacking fails (may be related to Faerie Fire resisted);
+-- When Faerie Fire was resisted, cooldown doesn't always work
+-- BUG: When Faerie Fire (not Feral) is located on the action bar, the
+-- Faerie Fire (Feral) cooldown does not work
+-- BUG: On shapeshifting, getting a slot may throw an error (probably a WONTFIX)
 
 -- EXPLORE: Check who caused debuff so that Rake and Rip can stack (if possible)
 -- EXPLORE: Query energy costs for each attack (if possible)
@@ -205,7 +207,7 @@ function FF_StartAttack(settings, state)
                 if not FF_IsDebuffActive(FAERIE_FIRE_ICON)
                     and not state.isAutoAttacking then
                         cast('Attack')
-                end
+                    end
                 return
     end
 
@@ -315,5 +317,5 @@ end
 
 FF_InitSlashCommand()
 
-ChatFrame1:AddMessage('// FeralFire v0.4 loaded')
-ChatFrame2:AddMessage('// FeralFire v0.4 loaded')
+ChatFrame1:AddMessage('// FeralFire v0.5 loaded')
+ChatFrame2:AddMessage('// FeralFire v0.5 loaded')
