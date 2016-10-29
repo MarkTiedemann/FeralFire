@@ -13,7 +13,7 @@
 In your macro or game chat, run either `/feralfire` or `/ff` with the following options:
 
 ```
-auto_targetting=true
+target_nearest_enemy=true
 
 track_humanoids=true
 

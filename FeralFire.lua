@@ -1,9 +1,7 @@
 
--- TODO: Faerie Fire only when less than 40 energy (else Claw, etc.)
--- TODO: Auto target switch on dead enemy (after looting)
+-- TODO: Target switch on dead enemy (after looting)
 
--- BUG: Sometimes auto-attacking fails (may be related to Faerie Fire resisted);
--- When Faerie Fire was resisted, cooldown doesn't always work
+-- BUG: When Faerie Fire was resisted, cooldown doesn't always work
 -- BUG: When Faerie Fire (not Feral) is located on the action bar, the
 -- Faerie Fire (Feral) cooldown does not work
 -- BUG: On shapeshifting, getting a slot may throw an error (probably a WONTFIX)
@@ -29,7 +27,7 @@ function FF_GetDefaultSettings()
 
     settings = {}
 
-    settings.auto_targetting = true
+    settings.target_nearest_enemy = true
 
     settings.track_humanoids = true
 
@@ -75,6 +73,9 @@ function FF_GetFearieFireRank()
         local spellName, spellRank = GetSpellName(spellIndex, BOOKTYPE_SPELL)
         if spellName == 'Faerie Fire (Feral)' then
             local length = string.len(spellRank)
+            -- spellRank is a string which looks like this: "Rank #"
+            -- To extract the number from the string, we have to use substring
+            -- because, in Lua, there is no built-in charAt function
             faerieFireRank = string.sub(spellRank, length, length)
         end
 	end
@@ -137,21 +138,6 @@ function FF_IsDebuffActive(icon)
     return active
 end
 
-function FF_ShouldUseFinisher(settings, state)
-
-    if settings.rip
-        and state.comboPoints >= settings.rip_threshold then
-            return true
-    end
-
-    if settings.ferocious_bite
-        and state.comboPoints >= settings.ferocious_bite_threshold then
-            return true
-    end
-
-    return false
-end
-
 function FF_StartAttack(settings, state)
 
     -- Debug settings
@@ -174,8 +160,8 @@ function FF_StartAttack(settings, state)
     end
 
     if not state.hasTarget then
-        -- Auto Targetting
-        if settings.auto_targetting then
+        -- Target nearest enemy
+        if settings.target_nearest_enemy then
             TargetNearestEnemy()
             -- Track Humanoids
             if settings.track_humanoids then
@@ -198,39 +184,9 @@ function FF_StartAttack(settings, state)
                 return cast('Pounce')
     end
 
-    -- Faerie Fire
-    if settings.faerie_fire
-        and state.isFaerieFireReady
-            and not FF_IsDebuffActive(FAERIE_FIRE_ICON) then
-                cast('Faerie Fire (Feral)(Rank ' .. state.faerieFireRank .. ')')
-                -- If Faerie Fire was resisted, attack anyways
-                if not FF_IsDebuffActive(FAERIE_FIRE_ICON)
-                    and not state.isAutoAttacking then
-                        cast('Attack')
-                    end
-                return
-    end
-
-    -- Rake
-    if settings.rake
-        and state.energy >= settings.rake_costs
-            and not FF_ShouldUseFinisher(settings, state)
-                and not FF_IsDebuffActive(RAKE_ICON) then
-                    return cast('Rake')
-    end
-
-    -- Claw
-    if settings.claw
-        and state.energy >= settings.claw_costs
-            and not FF_ShouldUseFinisher(settings, state) then
-                return cast('Claw')
-    end
-
-    -- Shred
-    if settings.shred
-        and state.energy >= settings.shred_costs
-            and not FF_ShouldUseFinisher(settings, state) then
-                return cast('Shred')
+    -- Attack
+    if not state.isAutoAttacking then
+        cast('Attack')
     end
 
     -- Rip
@@ -248,9 +204,30 @@ function FF_StartAttack(settings, state)
                 return cast('Ferocious Bite')
     end
 
-    -- Attack
-    if not state.isAutoAttacking then
-        return cast('Attack')
+    -- Rake
+    if settings.rake
+        and state.energy >= settings.rake_costs
+            and not FF_IsDebuffActive(RAKE_ICON) then
+                return cast('Rake')
+    end
+
+    -- Claw
+    if settings.claw
+        and state.energy >= settings.claw_costs
+            return cast('Claw')
+    end
+
+    -- Shred
+    if settings.shred
+        and state.energy >= settings.shred_costs
+            return cast('Shred')
+    end
+
+    -- Faerie Fire
+    if settings.faerie_fire
+        and state.isFaerieFireReady
+            and not FF_IsDebuffActive(FAERIE_FIRE_ICON) then
+                return cast('Faerie Fire (Feral)(Rank ' .. state.faerieFireRank .. ')')
     end
 
 end
@@ -317,5 +294,5 @@ end
 
 FF_InitSlashCommand()
 
-ChatFrame1:AddMessage('// FeralFire v0.5 loaded')
-ChatFrame2:AddMessage('// FeralFire v0.5 loaded')
+ChatFrame1:AddMessage('// FeralFire v0.6 loaded')
+ChatFrame2:AddMessage('// FeralFire v0.6 loaded')
