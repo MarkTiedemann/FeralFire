@@ -59,5 +59,4 @@ This addon requires `Attack`, `Prowl`, `Claw` and `Faerie Fire (Feral)` to be lo
 
 [WTFPL](http://www.wtfpl.net/) – Do What the F*ck You Want to Public License.
 
-Made with :heart: by [@MarkTiedemann](https://twitter.com/MarkTiedemannDE) and
-[@JulianEggers](https://github.com/JulianEggers).
+Made with :heart: by [@MarkTiedemann](https://twitter.com/MarkTiedemannDE).

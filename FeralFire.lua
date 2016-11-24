@@ -1,9 +1,10 @@
 
--- TODO: Target switch on dead enemy (after looting)
+-- TODO: Advanced Faerie Fire options for dealing with invisibility potions, druids,
+-- and rogues
 
--- BUG: When Faerie Fire (*not* Feral) is located on the action bar, the
--- Faerie Fire (Feral) cooldown does not work (probably a WONTFIX)
--- BUG: On shapeshifting, getting a slot may throw an error (probably a WONTFIX)
+-- WONTFIX: When Faerie Fire (*not* Feral) is located on the action bar, the
+-- Faerie Fire (Feral) cooldown does not work
+-- WONTFIX: On shapeshifting, getting a slot may throw an error
 
 -- EXPLORE: Check who caused debuff so that Rake and Rip can stack (if possible)
 -- EXPLORE: Query energy costs for each attack (if possible)
@@ -104,7 +105,9 @@ function FF_GetState(settings)
 
     state.energy = UnitMana('player')
     state.comboPoints = GetComboPoints('player')
+
     state.hasTarget = GetUnitName('target')
+    state.isTargetDead = UnitIsDead('target') == 1
 
     -- TODO: Improve performance of getting the slots
 
@@ -113,7 +116,7 @@ function FF_GetState(settings)
     state.faerieFireSlot = FF_GetSlot(FAERIE_FIRE_ICON)
     state.clawSlot = FF_GetSlot(CLAW_ICON)
 
-    state.isInCombat = UnitAffectingCombat('player')
+    state.isInCombat = UnitAffectingCombat('player') == 1
     state.isAutoAttacking = IsCurrentAction(state.attackSlot)
     state.isProwling = GetActionTexture(state.prowlingSlot) == PROWL_ACTIVE_ICON
     state.isFaerieFireReady = GetActionCooldown(state.faerieFireSlot) == 0
@@ -159,15 +162,18 @@ function FF_StartAttack(settings, state)
         return
     end
 
-    if not state.hasTarget then
-        -- Target nearest enemy
-        if settings.target_nearest_enemy then
-            TargetNearestEnemy()
-            -- Track Humanoids
-            if settings.track_humanoids then
-                return cast('Track Humanoids')
+    if not state.hasTarget
+        or state.isTargetDead then
+            -- Target nearest enemy
+            if settings.target_nearest_enemy then
+                TargetNearestEnemy()
+                -- Track Humanoids
+                if settings.track_humanoids then
+                    return cast('Track Humanoids')
+                else
+                    return -- prevent accidental pull
+                end
             end
-        end
     end
 
     -- Ravage
@@ -302,5 +308,5 @@ end
 
 FF_InitSlashCommand()
 
-ChatFrame1:AddMessage('// FeralFire v0.7 loaded')
-ChatFrame2:AddMessage('// FeralFire v0.7 loaded')
+ChatFrame1:AddMessage('// FeralFire v0.8 loaded')
+ChatFrame2:AddMessage('// FeralFire v0.8 loaded')

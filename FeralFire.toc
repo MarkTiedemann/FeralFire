@@ -2,5 +2,5 @@
 ## Title: FeralFire
 ## Notes: Customizable WoW attack add-on for Cat Form Feral Druids.
 ## Author: Mark Tiedemann, Julian Eggers
-## Version: 0.7
+## Version: 0.8
 FeralFire.lua
